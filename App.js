@@ -1,55 +1,50 @@
-import  { useState, useEffect, React }  from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, Linking } from 'react-native';
-import * as Contacts from 'expo-contacts';
+import React, { useEffect, useState } from 'react';
+// all our "elements" in React Native need to come from 'react-native' or a third part library for react native.
+import { Linking } from 'react-native';
+import { NativeBaseProvider, Box } from 'native-base';
+import * as Contacts from 'expo-contacts'; // there is no default export from expo-contacts
+import ContactsList from './components/ContactsList';
+import Footer from './components/Footer';
+import Header from './components/Header';
 
+// let read the contacts from our phone and make phone calls.
 export default function App() {
 
   let [contacts, setContacts] = useState([]);
-  
-  useEffect(()=> {
 
-    // define an async function and call it immediately.
-    const getContacts = async() => {
+  useEffect(() => {
+    // define an async function and call it immediatly
+    const getContacts = async () => {
       // ask for permission
       let { status } = await Contacts.requestPermissionsAsync();
-      console.log(status);
-      if (status === 'granted'){
+      if (status === 'granted') {
         let contactList = await Contacts.getContactsAsync();
-        console.log(contactList);
         setContacts(contactList.data);
       }
-    }
+    };
 
     getContacts();
+
   }, []);
 
   const call = (contact) => {
-    const phoneNumber = contact.phoneNumbers[0].number;
-    const link = `tel:${phoneNumber}`
-    Linking.canOpenURL;
-  }
+    const phoneNumber = contact.phoneNumbers[0].number; // extract number from a contact
+    const link = `tel:${phoneNumber}`; // create our Linking URL
+    Linking.canOpenURL(link) // ask phone if we can use this linking feature
+      .then(() => Linking.openURL(link)) // if so open the url
+      .catch(console.error); // or log an error
+  };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-      data={contacts}
-      keyExtractor={contact => contact.id}
-      renderItem={( { item } )=> {
-        return (<Button title={item.name} onPress={console.log(item)} />)
-      }}      
-      />
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NativeBaseProvider>
+      <Box flex={1}>
+        <Header />
+        <ContactsList
+          contacts={contacts}
+          call={call}
+        />
+        <Footer />
+      </Box>
+    </NativeBaseProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
