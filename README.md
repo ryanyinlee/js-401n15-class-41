@@ -1,7 +1,5 @@
 # React Native App (Android)
 
-
-
 1) GPS
 
 Milestone 1 - MVP (This Lab)
